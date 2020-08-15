@@ -37,7 +37,10 @@ ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip \
     SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
     PATH=$PATH:$SPARK_HOME/bin
 COPY ./es-lib/* $SPARK_HOME/jars/
+
+COPY ./cacerts /usr/lib/jvm/java-1.11.0-openjdk-amd64/lib/security/
 ENV PYSPARK_DRIVER_PYTHON_OPTS=notebook
+
 USER $NB_UID
 
 # Install pyarrow
@@ -47,5 +50,3 @@ RUN conda install --quiet -y 'pyarrow' && \
     fix-permissions "/home/${NB_USER}"
 
 WORKDIR $HOME
-
-

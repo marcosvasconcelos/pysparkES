@@ -1,0 +1,10 @@
+version: '3'
+services:
+  pyspark-es:
+    build: '.'
+    ports:
+        - "127.0.0.1:8889:8888"
+    volumes:
+      - ../../../.:/docker
+    working_dir: /work
+    command: /usr/local/spark/pyspark

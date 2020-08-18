@@ -31,6 +31,15 @@ services:
       ELASTICSEARCH_URL: https://elastic-node1:9200
       ELASTICSEARCH_HOSTS: https://elastic-node1:9200
     networks:
+      - es-net
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - 3000:3000
+    expose:
+      - "3000"
+    networks:
       - es-net 
 networks:
   es-net:

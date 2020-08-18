@@ -2,7 +2,7 @@
 ##
 ####
 cd elk
-sudo docker-compose up --no-start
+sudo docker-compose up
 cd ../jupyter-notebook
 sudo docker-compose build
 sudo docker run -d -p 8888:8888 --name pyspark-es --network es-net  jupyter-notebook_pyspark:latest

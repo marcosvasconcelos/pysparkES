@@ -2,6 +2,7 @@
 ##
 ####
 cd elk
+sudo docker network create es-net -d "bridge"
 sudo docker-compose up --no-start
 cd ../jupyter-notebook
 sudo docker-compose build 

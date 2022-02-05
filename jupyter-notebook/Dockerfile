@@ -50,3 +50,11 @@ RUN conda install --quiet -y 'pyarrow' && \
     fix-permissions "/home/${NB_USER}"
 WORKDIR $HOME
 COPY ./python-class-json-render.ipynb /home/${NB_USER}
+
+# Install packages for HBase connection
+RUN apt update
+RUN apt -y install python3-dev gcc
+RUN apt -y install python-dev
+RUN apt -y install python3-thriftpy
+RUN pip install happybase
+RUN pip3 install happybase

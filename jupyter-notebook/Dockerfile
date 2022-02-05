@@ -14,28 +14,37 @@ USER root
 ENV APACHE_SPARK_VERSION=3.0.0 \
     HADOOP_VERSION=3.2
 
-RUN apt-get -y update && \
-    apt-get install --no-install-recommends -y openjdk-11-jre-headless ca-certificates-java && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get -y update
+RUN apt-get -y install openjdk-11-jdk
+RUN apt-get -y install gcc python-dev python3-dev python3-thriftpy python-thriftpy
+RUN rm -rf /var/lib/apt/lists/*
+
+# Install packages for HBase connection
+# RUN apt-get -y install gcc
+# RUN apt-get -y install python-dev
+# RUN apt-get -y install python3-thriftpy
+# RUN apt-get -y install python-thriftpy
+RUN pip install pip -U
+RUN pip3 install pip -U
+RUN pip install happybase
+RUN pip3 install happybase
 
 # Using the preferred mirror to download Spark
 WORKDIR /tmp
-
+# https://archive.apache.org/dist/spark/spark-3.0.0/spark-3.0.0-bin-hadoop3.2.tgz
 # hadolint ignore=SC2046
-RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz\?as_json | \
-    python -c "import sys, json; content=json.load(sys.stdin); print(content['preferred']+content['path_info'])") && \
-    echo "BFE45406C67CC4AE00411AD18CC438F51E7D4B6F14EB61E7BF6B5450897C2E8D3AB020152657C0239F253735C263512FFABF538AC5B9FFFA38B8295736A9C387 *spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" | sha512sum -c - && \
-    tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
-    rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
+RUN wget -q https://archive.apache.org/dist/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+RUN tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner
+RUN rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 
 WORKDIR /usr/local
 RUN ln -s "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" spark
 
 # Configure Spark
 ENV SPARK_HOME=/usr/local/spark
-ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip \
-    SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
-    PATH=$PATH:$SPARK_HOME/bin
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip
+ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
+ENV  PATH=$PATH:$SPARK_HOME/bin
 COPY ./es-lib/* $SPARK_HOME/jars/ 
 
 COPY ./cacerts /usr/lib/jvm/java-1.11.0-openjdk-amd64/lib/security/
@@ -51,10 +60,3 @@ RUN conda install --quiet -y 'pyarrow' && \
 WORKDIR $HOME
 COPY ./python-class-json-render.ipynb /home/${NB_USER}
 
-# Install packages for HBase connection
-RUN apt update
-RUN apt -y install python3-dev gcc
-RUN apt -y install python-dev
-RUN apt -y install python3-thriftpy
-RUN pip install happybase
-RUN pip3 install happybase

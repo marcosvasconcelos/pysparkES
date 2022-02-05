@@ -10,6 +10,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 
+# Provide passwordless 
+RUN \
+    sed -i /etc/sudoers -re 's/^%sudo.*/%sudo ALL=(ALL:ALL) NOPASSWD: ALL/g' && \
+    sed -i /etc/sudoers -re 's/^root.*/root ALL=(ALL:ALL) NOPASSWD: ALL/g' && \
+    sed -i /etc/sudoers -re 's/^#includedir.*/## **Removed the include directive** ##"/g' && \
+    echo "${NB_USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \  
+    chmod g+w /etc/passwd
+
 # Spark dependencies
 ENV APACHE_SPARK_VERSION=3.0.0 \
     HADOOP_VERSION=3.2
@@ -59,4 +67,5 @@ RUN conda install --quiet -y 'pyarrow' && \
     fix-permissions "/home/${NB_USER}"
 WORKDIR $HOME
 COPY ./python-class-json-render.ipynb /home/${NB_USER}
+COPY hbase-sample-data_manipulation.ipynb /home/${NB_USER}
 
